@@ -7,24 +7,10 @@ frontend:
     build:
       commands:
         - npm run build
-        - echo "Build completed - static files ready"
   artifacts:
-    baseDirectory: out
+    baseDirectory: .next
     files:
       - '**/*'
   cache:
     paths:
       - node_modules/**/*
-  customHeaders:
-    - pattern: '**/*.js'
-      headers:
-        - key: 'Cache-Control'
-          value: 'public, max-age=31536000, immutable'
-    - pattern: '**/*.css'
-      headers:
-        - key: 'Cache-Control'
-          value: 'public, max-age=31536000, immutable'
-    - pattern: '**/*.html'
-      headers:
-        - key: 'Cache-Control'
-          value: 'public, max-age=0, must-revalidate'
