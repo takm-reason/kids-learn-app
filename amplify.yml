@@ -11,7 +11,7 @@ frontend:
     versions:
       node: 18
   artifacts:
-    baseDirectory: build
+    baseDirectory: out
     files:
       - '**/*'
   cache:
