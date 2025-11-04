@@ -354,7 +354,7 @@ export default function Drill({ difficulty, onProblemSolved, onSetComplete, onBa
     }
 
     return (
-        <div className="max-w-md mx-auto bg-white p-4 sm:p-6 rounded-lg shadow-md">
+        <div className="max-w-md mx-auto bg-gradient-to-br from-blue-50 to-indigo-100 border border-blue-200 p-4 sm:p-6 rounded-lg shadow-md">
             <div className="text-center mb-4 sm:mb-6">
                 {/* 進捗表示 */}
                 <div className="mb-4">
@@ -367,7 +367,7 @@ export default function Drill({ difficulty, onProblemSolved, onSetComplete, onBa
 
                 {/* 全10問の進捗表示 */}
                 <div className="mb-4">
-                    <div className="flex justify-center gap-2 flex-wrap">
+                    <div className="flex justify-center gap-1.5 flex-wrap">
                         {Array.from({ length: 10 }, (_, index) => {
                             const problemIndex = index;
                             const isAnswered = problemIndex < state.results.length;
@@ -379,7 +379,7 @@ export default function Drill({ difficulty, onProblemSolved, onSetComplete, onBa
                                 return (
                                     <div
                                         key={index}
-                                        className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-md ${isCorrect ? 'bg-green-500' : 'bg-red-500'
+                                        className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm ${isCorrect ? 'bg-green-500' : 'bg-red-500'
                                             }`}
                                     >
                                         {isCorrect ? '○' : '×'}
@@ -390,7 +390,7 @@ export default function Drill({ difficulty, onProblemSolved, onSetComplete, onBa
                                 return (
                                     <div
                                         key={index}
-                                        className="w-8 h-8 rounded-full flex items-center justify-center bg-blue-500 text-white text-sm font-bold shadow-md animate-pulse"
+                                        className="w-6 h-6 rounded-full flex items-center justify-center bg-blue-500 text-white text-xs font-bold shadow-sm animate-pulse"
                                     >
                                         {problemIndex + 1}
                                     </div>
@@ -400,7 +400,7 @@ export default function Drill({ difficulty, onProblemSolved, onSetComplete, onBa
                                 return (
                                     <div
                                         key={index}
-                                        className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-300 text-gray-600 text-sm font-bold"
+                                        className="w-6 h-6 rounded-full flex items-center justify-center bg-gray-300 text-gray-600 text-xs font-bold"
                                     >
                                         {problemIndex + 1}
                                     </div>
@@ -410,12 +410,14 @@ export default function Drill({ difficulty, onProblemSolved, onSetComplete, onBa
                     </div>
                 </div>
 
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">
-                    足し算問題
-                </h3>
+                <div className="bg-white rounded-lg p-4 mb-4 shadow-sm border">
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">
+                        足し算問題
+                    </h3>
 
-                <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-indigo-600 mb-6 break-all">
-                    {state.num1} + {state.num2} = ?
+                    <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-indigo-600 mb-2 break-all">
+                        {state.num1} + {state.num2} = ?
+                    </div>
                 </div>
 
                 {!state.showNextButton ? (

@@ -81,6 +81,7 @@ export default function Home() {
     const [loading, setLoading] = useState(true);
     const [problemsSolved, setProblemsSolved] = useState(0);
     const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | null>(null);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -95,6 +96,23 @@ export default function Home() {
 
         return () => unsubscribe();
     }, [router]);
+
+    // メニュー外のクリックでメニューを閉じる
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (isMenuOpen) {
+                const target = event.target as Element;
+                if (!target.closest('header')) {
+                    setIsMenuOpen(false);
+                }
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isMenuOpen]);
 
     const handleSignOut = async () => {
         try {
@@ -139,21 +157,72 @@ export default function Home() {
             {/* ヘッダー */}
             <header className="bg-white shadow sticky top-0 z-10">
                 <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 md:py-6 gap-3 sm:gap-4">
+                    <div className="flex justify-between items-center py-4 md:py-6">
+                        {/* ロゴ・タイトル */}
                         <div className="flex-1 min-w-0">
                             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 truncate">算数ドリル</h1>
-                            <p className="text-xs sm:text-sm text-gray-600 mt-1 truncate">
-                                ログイン中: {user.email}
-                            </p>
                         </div>
-                        <div className="flex flex-row sm:flex-row items-center gap-3 sm:gap-4 w-full sm:w-auto">
-                            <div className="text-center flex-1 sm:flex-none">
-                                <p className="text-xl sm:text-2xl font-bold text-indigo-600">{problemsSolved}</p>
-                                <p className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">今日解いた問題数</p>
+
+                        {/* デスクトップメニュー (md以上で表示) */}
+                        <div className="hidden md:flex items-center gap-4">
+                            <div className="text-center">
+                                <p className="text-2xl font-bold text-indigo-600">{problemsSolved}</p>
+                                <p className="text-sm text-gray-600">今日解いた問題数</p>
+                            </div>
+                            <div className="text-sm text-gray-600">
+                                {user.email}
                             </div>
                             <button
                                 onClick={handleSignOut}
-                                className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 sm:px-4 rounded text-sm sm:text-base whitespace-nowrap min-h-[44px] min-w-[44px]"
+                                className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-base"
+                            >
+                                サインアウト
+                            </button>
+                        </div>
+
+                        {/* ハンバーガーメニューボタン (md未満で表示) */}
+                        <div className="md:hidden">
+                            <button
+                                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 transition-colors duration-200"
+                                aria-expanded={isMenuOpen}
+                            >
+                                <span className="sr-only">{isMenuOpen ? 'メニューを閉じる' : 'メニューを開く'}</span>
+                                {/* アイコンの切り替え */}
+                                {isMenuOpen ? (
+                                    <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                ) : (
+                                    <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                    </svg>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* モバイルメニュー (md未満で表示) */}
+                    <div className={`md:hidden border-t border-gray-200 transition-all duration-300 ease-in-out ${isMenuOpen
+                        ? 'max-h-48 opacity-100 py-4'
+                        : 'max-h-0 opacity-0 py-0 overflow-hidden'
+                        }`}>
+                        <div className="space-y-4">
+                            {/* ユーザー情報 */}
+                            <div className="text-sm text-gray-600">
+                                <span className="font-medium">ログイン中:</span> {user.email}
+                            </div>
+
+                            {/* 統計情報 */}
+                            <div className="flex items-center justify-between py-2">
+                                <span className="text-sm text-gray-600">今日解いた問題数</span>
+                                <span className="text-xl font-bold text-indigo-600">{problemsSolved}</span>
+                            </div>
+
+                            {/* サインアウトボタン */}
+                            <button
+                                onClick={handleSignOut}
+                                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded text-base transition-colors duration-200"
                             >
                                 サインアウト
                             </button>
@@ -167,12 +236,29 @@ export default function Home() {
                 {!selectedDifficulty ? (
                     <DifficultySelection onSelectDifficulty={setSelectedDifficulty} />
                 ) : (
-                    <div className="bg-white overflow-hidden shadow rounded-lg">
-                        <div className="px-3 py-4 sm:px-4 sm:py-5 md:p-6">
-                            <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900">
-                                    {getDifficultyTitle(selectedDifficulty)}
-                                </h2>
+                    <>
+                        <div className="bg-white overflow-hidden shadow rounded-lg">
+                            <div className="px-3 py-4 sm:px-4 sm:py-5 md:p-6">
+                                <div className="mb-4">
+                                    <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900 text-center">
+                                        {getDifficultyTitle(selectedDifficulty)}
+                                    </h2>
+                                </div>
+                                <Drill
+                                    difficulty={selectedDifficulty}
+                                    onProblemSolved={handleProblemSolved}
+                                    onSetComplete={handleSetComplete}
+                                    onBackToDifficulty={handleBackToDifficulty}
+                                />
+                            </div>
+                        </div>
+
+                        {/* 下部のメッセージとボタン */}
+                        <div className="mt-4 bg-white rounded-lg shadow p-4">
+                            <p className="text-sm sm:text-base text-gray-600 text-center mb-4">
+                                問題を解いて算数の力を伸ばしましょう！正解すると次の問題が表示されます。
+                            </p>
+                            <div className="flex justify-center">
                                 <button
                                     onClick={() => setSelectedDifficulty(null)}
                                     className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded text-sm"
@@ -180,17 +266,8 @@ export default function Home() {
                                     難易度変更
                                 </button>
                             </div>
-                            <p className="text-sm sm:text-base text-gray-600 mb-6">
-                                問題を解いて算数の力を伸ばしましょう！正解すると次の問題が表示されます。
-                            </p>
-                            <Drill
-                                difficulty={selectedDifficulty}
-                                onProblemSolved={handleProblemSolved}
-                                onSetComplete={handleSetComplete}
-                                onBackToDifficulty={handleBackToDifficulty}
-                            />
                         </div>
-                    </div>
+                    </>
                 )}
             </main>
         </div>
