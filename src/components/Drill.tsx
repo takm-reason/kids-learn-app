@@ -1,53 +1,172 @@
-import { useState } from 'react';
+import { useReducer } from 'react';
+
+export type Difficulty = 'easy' | 'medium' | 'hard';
 
 interface DrillProps {
+    difficulty: Difficulty;
     onProblemSolved: () => void;
 }
 
-export default function Drill({ onProblemSolved }: DrillProps) {
-    const [num1, setNum1] = useState(() => Math.floor(Math.random() * 9) + 1);
-    const [num2, setNum2] = useState(() => Math.floor(Math.random() * 9) + 1);
-    const [userAnswer, setUserAnswer] = useState('');
-    const [feedback, setFeedback] = useState('');
-    const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-    const [showNextButton, setShowNextButton] = useState(false);
+interface DrillState {
+    num1: number;
+    num2: number;
+    choices: number[];
+    selectedAnswer: number | null;
+    feedback: string;
+    isCorrect: boolean | null;
+    showNextButton: boolean;
+    difficulty: Difficulty;
+    prevNum1: number | null;
+    prevNum2: number | null;
+}
 
-    // 新しい問題を生成
-    const generateNewProblem = () => {
-        setNum1(Math.floor(Math.random() * 9) + 1);  // 1-9の範囲
-        setNum2(Math.floor(Math.random() * 9) + 1);  // 1-9の範囲
-        setUserAnswer('');
-        setFeedback('');
-        setIsCorrect(null);
-        setShowNextButton(false);
+type DrillAction =
+    | { type: 'NEW_PROBLEM'; difficulty: Difficulty }
+    | { type: 'SELECT_ANSWER'; answer: number; correctAnswer: number; onProblemSolved: () => void }
+    | { type: 'RESET_FOR_NEXT' };
+
+const generateNumbers = (diff: Difficulty, prevNum1?: number | null, prevNum2?: number | null) => {
+    let num1: number, num2: number;
+    let attempts = 0;
+    const maxAttempts = 50; // 無限ループを防ぐため
+
+    do {
+        switch (diff) {
+            case 'easy':
+                // 1から3の数字の足し算
+                num1 = Math.floor(Math.random() * 3) + 1; // 1-3
+                num2 = Math.floor(Math.random() * 3) + 1; // 1-3
+                break;
+            case 'medium':
+                // 答えが9以下の足し算
+                do {
+                    num1 = Math.floor(Math.random() * 9) + 1; // 1-9
+                    num2 = Math.floor(Math.random() * 9) + 1; // 1-9
+                } while (num1 + num2 > 9);
+                break;
+            case 'hard':
+                // 1から9までの足し算
+                num1 = Math.floor(Math.random() * 9) + 1; // 1-9
+                num2 = Math.floor(Math.random() * 9) + 1; // 1-9
+                break;
+            default:
+                num1 = 1;
+                num2 = 1;
+        }
+        attempts++;
+    } while (
+        prevNum1 !== null &&
+        prevNum2 !== null &&
+        ((num1 === prevNum1 && num2 === prevNum2) || (num1 === prevNum2 && num2 === prevNum1)) &&
+        attempts < maxAttempts
+    );
+
+    return { num1, num2 };
+};
+
+const generateChoices = (correctAnswer: number) => {
+    const choices = [correctAnswer];
+
+    // 正解以外の選択肢を2つ生成
+    while (choices.length < 3) {
+        const wrongAnswer = correctAnswer + Math.floor(Math.random() * 6) - 3; // -3から+2の範囲で間違った答えを生成
+        if (wrongAnswer > 0 && wrongAnswer <= 18 && !choices.includes(wrongAnswer)) {
+            choices.push(wrongAnswer);
+        }
+    }
+
+    // 数字の小さい順に並べる
+    return choices.sort((a, b) => a - b);
+};
+
+const createNewProblem = (difficulty: Difficulty, prevNum1?: number | null, prevNum2?: number | null): Pick<DrillState, 'num1' | 'num2' | 'choices'> => {
+    const newNumbers = generateNumbers(difficulty, prevNum1, prevNum2);
+    const correctAnswer = newNumbers.num1 + newNumbers.num2;
+    return {
+        num1: newNumbers.num1,
+        num2: newNumbers.num2,
+        choices: generateChoices(correctAnswer)
     };
+};
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-
-        const correctAnswer = num1 + num2;
-        const userAnswerNum = parseInt(userAnswer);
-
-        if (isNaN(userAnswerNum)) {
-            setFeedback('数字を入力してください');
-            setIsCorrect(false);
-            return;
+const drillReducer = (state: DrillState, action: DrillAction): DrillState => {
+    switch (action.type) {
+        case 'NEW_PROBLEM': {
+            const newProblem = createNewProblem(action.difficulty, state.prevNum1, state.prevNum2);
+            return {
+                ...state,
+                ...newProblem,
+                difficulty: action.difficulty,
+                prevNum1: state.num1,
+                prevNum2: state.num2,
+                selectedAnswer: null,
+                feedback: '',
+                isCorrect: null,
+                showNextButton: false
+            };
         }
-
-        if (userAnswerNum === correctAnswer) {
-            setFeedback('正解です！🎉');
-            setIsCorrect(true);
-            setShowNextButton(true);
-            onProblemSolved(); // 正解時にコールバックを呼び出し
-        } else {
-            setFeedback(`不正解です。正解は ${correctAnswer} です。`);
-            setIsCorrect(false);
-            setShowNextButton(true);
+        case 'SELECT_ANSWER': {
+            const isCorrect = action.answer === action.correctAnswer;
+            if (isCorrect) {
+                action.onProblemSolved();
+            }
+            return {
+                ...state,
+                selectedAnswer: action.answer,
+                feedback: isCorrect ? '正解です！🎉' : `不正解です。正解は ${action.correctAnswer} です。`,
+                isCorrect,
+                showNextButton: true
+            };
         }
+        case 'RESET_FOR_NEXT': {
+            const newProblem = createNewProblem(state.difficulty, state.num1, state.num2);
+            return {
+                ...state,
+                ...newProblem,
+                prevNum1: state.num1,
+                prevNum2: state.num2,
+                selectedAnswer: null,
+                feedback: '',
+                isCorrect: null,
+                showNextButton: false
+            };
+        }
+        default:
+            return state;
+    }
+};
+
+export default function Drill({ difficulty, onProblemSolved }: DrillProps) {
+    const initialProblem = createNewProblem(difficulty);
+
+    const [state, dispatch] = useReducer(drillReducer, {
+        ...initialProblem,
+        selectedAnswer: null,
+        feedback: '',
+        isCorrect: null,
+        showNextButton: false,
+        difficulty,
+        prevNum1: null,
+        prevNum2: null
+    });
+
+    // 難易度が変更された場合の処理
+    if (state.difficulty !== difficulty) {
+        dispatch({ type: 'NEW_PROBLEM', difficulty });
+    } const handleAnswerSelect = (answer: number) => {
+        if (state.showNextButton) return; // 既に回答済みの場合は何もしない
+
+        const correctAnswer = state.num1 + state.num2;
+        dispatch({
+            type: 'SELECT_ANSWER',
+            answer,
+            correctAnswer,
+            onProblemSolved
+        });
     };
 
     const handleNextProblem = () => {
-        generateNewProblem();
+        dispatch({ type: 'RESET_FOR_NEXT' });
     };
 
     return (
@@ -58,34 +177,28 @@ export default function Drill({ onProblemSolved }: DrillProps) {
                 </h3>
 
                 <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-indigo-600 mb-6 break-all">
-                    {num1} + {num2} = ?
+                    {state.num1} + {state.num2} = ?
                 </div>
 
-                {!showNextButton ? (
-                    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-                        <div>
-                            <input
-                                type="number"
-                                value={userAnswer}
-                                onChange={(e) => setUserAnswer(e.target.value)}
-                                className="w-24 sm:w-32 text-center text-xl sm:text-2xl font-bold border-2 border-gray-300 rounded-lg px-2 sm:px-4 py-3 sm:py-2 focus:outline-none focus:border-indigo-500 min-h-[44px] touch-manipulation"
-                                placeholder="?"
-                                autoFocus
-                                inputMode="numeric"
-                                pattern="[0-9]*"
-                            />
+                {!state.showNextButton ? (
+                    <div className="space-y-4 sm:space-y-6">
+                        <p className="text-lg sm:text-xl text-gray-700 mb-4">答えを選んでください：</p>
+                        <div className="grid grid-cols-1 gap-3 sm:gap-4 max-w-xs mx-auto">
+                            {state.choices.map((choice: number, index: number) => (
+                                <button
+                                    key={index}
+                                    onClick={() => handleAnswerSelect(choice)}
+                                    className="bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold py-4 px-6 rounded-lg text-xl sm:text-2xl min-h-[60px] touch-manipulation transition-colors duration-150 shadow-md hover:shadow-lg"
+                                >
+                                    {choice}
+                                </button>
+                            ))}
                         </div>
-                        <button
-                            type="submit"
-                            className="bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-lg text-base sm:text-lg min-h-[44px] min-w-[120px] touch-manipulation transition-colors duration-150"
-                        >
-                            答える
-                        </button>
-                    </form>
+                    </div>
                 ) : (
                     <div className="space-y-4 sm:space-y-6">
                         <div className="text-xl sm:text-2xl font-bold">
-                            答え: {userAnswer}
+                            あなたの答え: {state.selectedAnswer}
                         </div>
                         <button
                             onClick={handleNextProblem}
@@ -96,12 +209,12 @@ export default function Drill({ onProblemSolved }: DrillProps) {
                     </div>
                 )}
 
-                {feedback && (
-                    <div className={`mt-4 sm:mt-6 p-3 sm:p-4 rounded-lg text-base sm:text-lg font-semibold ${isCorrect
+                {state.feedback && (
+                    <div className={`mt-4 sm:mt-6 p-3 sm:p-4 rounded-lg text-base sm:text-lg font-semibold ${state.isCorrect
                         ? 'bg-green-100 text-green-800 border border-green-200'
                         : 'bg-red-100 text-red-800 border border-red-200'
                         }`}>
-                        {feedback}
+                        {state.feedback}
                     </div>
                 )}
             </div>
