@@ -72,14 +72,59 @@ const generateNumbers = (diff: Difficulty, prevNum1?: number | null, prevNum2?: 
     return { num1, num2 };
 };
 
-const generateChoices = (correctAnswer: number) => {
+const generateChoices = (correctAnswer: number, difficulty: Difficulty) => {
     const choices = [correctAnswer];
 
+    // 難易度に応じた選択肢の範囲を設定
+    let minValue: number, maxValue: number, range: number;
+
+    switch (difficulty) {
+        case 'easy':
+            // 初級：1から3の数字なので、答えは2〜6の範囲
+            minValue = 1;
+            maxValue = 6;
+            range = 2; // 正解から±1の範囲で選択肢を生成
+            break;
+        case 'medium':
+            // 中級：答えが9以下なので、1〜9の範囲
+            minValue = 1;
+            maxValue = 9;
+            range = 3; // 正解から±2の範囲で選択肢を生成
+            break;
+        case 'hard':
+            // 上級：1から9までの足し算なので、答えは2〜18の範囲
+            minValue = 1;
+            maxValue = 18;
+            range = 4; // 正解から±3の範囲で選択肢を生成
+            break;
+        default:
+            minValue = 1;
+            maxValue = 18;
+            range = 3;
+    }
+
     // 正解以外の選択肢を2つ生成
-    while (choices.length < 3) {
-        const wrongAnswer = correctAnswer + Math.floor(Math.random() * 6) - 3; // -3から+2の範囲で間違った答えを生成
-        if (wrongAnswer > 0 && wrongAnswer <= 18 && !choices.includes(wrongAnswer)) {
+    let attempts = 0;
+    const maxAttempts = 50;
+
+    while (choices.length < 3 && attempts < maxAttempts) {
+        const offset = Math.floor(Math.random() * (range * 2 + 1)) - range; // -range から +range の範囲
+        const wrongAnswer = correctAnswer + offset;
+
+        if (wrongAnswer >= minValue &&
+            wrongAnswer <= maxValue &&
+            wrongAnswer !== correctAnswer &&
+            !choices.includes(wrongAnswer)) {
             choices.push(wrongAnswer);
+        }
+        attempts++;
+    }
+
+    // もし十分な選択肢が生成できなかった場合は、範囲内でランダムに追加
+    while (choices.length < 3) {
+        const randomAnswer = Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue;
+        if (!choices.includes(randomAnswer)) {
+            choices.push(randomAnswer);
         }
     }
 
@@ -93,7 +138,7 @@ const createNewProblem = (difficulty: Difficulty, prevNum1?: number | null, prev
     return {
         num1: newNumbers.num1,
         num2: newNumbers.num2,
-        choices: generateChoices(correctAnswer)
+        choices: generateChoices(correctAnswer, difficulty)
     };
 };
 
