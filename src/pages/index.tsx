@@ -17,21 +17,21 @@ function DifficultySelection({ onSelectDifficulty }: DifficultySelectionProps) {
             title: '初級',
             description: '1から3の数字の足し算',
             icon: '🌟',
-            color: 'bg-green-500 hover:bg-green-600'
+            color: 'bg-slate-500 hover:bg-slate-600'
         },
         {
             id: 'medium' as Difficulty,
             title: '中級',
             description: '答えが9以下の足し算',
             icon: '⭐',
-            color: 'bg-yellow-500 hover:bg-yellow-600'
+            color: 'bg-slate-600 hover:bg-slate-700'
         },
         {
             id: 'hard' as Difficulty,
             title: '上級',
             description: '1から9までの足し算',
             icon: '🏆',
-            color: 'bg-red-500 hover:bg-red-600'
+            color: 'bg-slate-700 hover:bg-slate-800'
         }
     ];
 
@@ -141,7 +141,7 @@ export default function Home() {
         return (
             <div className="min-h-screen flex items-center justify-center p-4">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 sm:h-24 sm:w-24 md:h-32 md:w-32 border-b-2 border-indigo-600 mx-auto"></div>
+                    <div className="animate-spin rounded-full h-16 w-16 sm:h-24 sm:w-24 md:h-32 md:w-32 border-b-2 border-gray-600 mx-auto"></div>
                     <p className="mt-4 text-gray-600 text-sm sm:text-base">読み込み中...</p>
                 </div>
             </div>
@@ -166,7 +166,7 @@ export default function Home() {
                         {/* デスクトップメニュー (md以上で表示) */}
                         <div className="hidden md:flex items-center gap-4">
                             <div className="text-center">
-                                <p className="text-2xl font-bold text-indigo-600">{problemsSolved}</p>
+                                <p className="text-2xl font-bold text-gray-700">{problemsSolved}</p>
                                 <p className="text-sm text-gray-600">今日解いた問題数</p>
                             </div>
                             <div className="text-sm text-gray-600">
@@ -174,7 +174,7 @@ export default function Home() {
                             </div>
                             <button
                                 onClick={handleSignOut}
-                                className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-base"
+                                className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded text-base"
                             >
                                 サインアウト
                             </button>
@@ -184,7 +184,7 @@ export default function Home() {
                         <div className="md:hidden">
                             <button
                                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 transition-colors duration-200"
+                                className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-500 transition-colors duration-200"
                                 aria-expanded={isMenuOpen}
                             >
                                 <span className="sr-only">{isMenuOpen ? 'メニューを閉じる' : 'メニューを開く'}</span>
@@ -216,13 +216,13 @@ export default function Home() {
                             {/* 統計情報 */}
                             <div className="flex items-center justify-between py-2">
                                 <span className="text-sm text-gray-600">今日解いた問題数</span>
-                                <span className="text-xl font-bold text-indigo-600">{problemsSolved}</span>
+                                <span className="text-xl font-bold text-gray-700">{problemsSolved}</span>
                             </div>
 
                             {/* サインアウトボタン */}
                             <button
                                 onClick={handleSignOut}
-                                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded text-base transition-colors duration-200"
+                                className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded text-base transition-colors duration-200"
                             >
                                 サインアウト
                             </button>
