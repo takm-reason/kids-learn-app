@@ -7,6 +7,9 @@ frontend:
     build:
       commands:
         - npm run build
+  runtime:
+    versions:
+      node: 18
   artifacts:
     baseDirectory: build
     files:
