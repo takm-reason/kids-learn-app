@@ -1,36 +1,131 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 算数ドリル学習アプリ
 
-## Getting Started
+Next.js + Firebase Auth + AWS Amplifyで構築された一桁の足し算ドリル学習アプリです。
 
-First, run the development server:
+## 機能
+
+- Firebase Authenticationによるメール/パスワード認証
+- 1〜9の足し算問題をランダム生成
+- 正解/不正解の判定とフィードバック
+- ログインユーザーごとの今日解いた問題数の表示
+- レスポンシブデザイン（Tailwind CSS使用）
+
+## 技術スタック
+
+- **フレームワーク**: Next.js 14 (Pages Router)
+- **言語**: TypeScript
+- **認証**: Firebase Authentication
+- **スタイリング**: Tailwind CSS
+- **ホスティング**: AWS Amplify
+- **パッケージ管理**: npm
+
+## 必要な環境変数
+
+プロジェクトルートに `.env.local` ファイルを作成し、以下の環境変数を設定してください：
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key_here
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project_id.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ローカルでの起動手順
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **依存関係のインストール**
+   ```bash
+   npm install
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. **環境変数の設定**
+   - `.env.local.sample` を参考に `.env.local` ファイルを作成
+   - Firebase プロジェクトの設定値を入力
 
-## Learn More
+3. **開発サーバーの起動**
+   ```bash
+   npm run dev
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+4. **ブラウザでアクセス**
+   - http://localhost:3000 にアクセス
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Firebase設定
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. [Firebase Console](https://console.firebase.google.com/) でプロジェクトを作成
+2. Authentication を有効化し、メール/パスワード認証を設定
+3. プロジェクト設定から API キーなどの情報を取得
+4. `.env.local` に設定値を記載
 
-## Deploy on Vercel
+## AWS Amplifyでのデプロイ手順
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **GitHubリポジトリの準備**
+   ```bash
+   git add .
+   git commit -m "Initial commit"
+   git remote add origin https://github.com/yourusername/your-repo-name.git
+   git push -u origin main
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2. **AWS Amplify Console での設定**
+   - AWS Amplify Console にアクセス
+   - GitHubリポジトリを連携
+   - ビルド設定は `amplify.yml` が自動的に使用される
+
+3. **環境変数の設定**
+   - Amplify Console の環境変数設定で Firebase の設定値を追加
+
+4. **デプロイ**
+   - 自動的にビルド・デプロイが実行される
+
+## プロジェクト構成
+
+```
+├── amplify.yml                 # AWS Amplify ビルド設定
+├── next.config.ts             # Next.js 設定
+├── package.json               # 依存関係
+├── tsconfig.json              # TypeScript 設定
+├── .env.local.sample          # 環境変数のサンプル
+├── src/
+│   ├── components/
+│   │   ├── Drill.tsx          # 算数ドリルコンポーネント
+│   │   └── Layout.tsx         # レイアウトコンポーネント
+│   ├── lib/
+│   │   └── firebase.ts        # Firebase 設定
+│   ├── pages/
+│   │   ├── _app.tsx           # アプリケーションのエントリーポイント
+│   │   ├── index.tsx          # メインページ（認証ガード付き）
+│   │   └── login.tsx          # ログイン・登録ページ
+│   └── styles/
+│       └── globals.css        # グローバルスタイル
+└── public/                    # 静的ファイル
+```
+
+## 使用方法
+
+1. アプリにアクセスすると自動的にログインページに遷移
+2. 新規ユーザーは「アカウント作成」でメール/パスワードを登録
+3. 既存ユーザーはログイン
+4. ログイン後、算数ドリル画面で1〜9の足し算問題に挑戦
+5. 正解すると次の問題が表示され、解いた問題数がカウントアップ
+
+## 開発コマンド
+
+```bash
+# 開発サーバー起動
+npm run dev
+
+# プロダクションビルド
+npm run build
+
+# プロダクションサーバー起動（ローカル確認用）
+npm start
+
+# リント実行
+npm run lint
+```
+
+## ライセンス
+
+MIT
