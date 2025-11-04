@@ -109,6 +109,16 @@ export default function Home() {
         setProblemsSolved(prev => prev + 1);
     };
 
+    const handleSetComplete = (correctCount: number) => {
+        // 10問セット完了時の処理（結果画面を表示するためのログのみ）
+        console.log(`セット完了: ${correctCount}/10問正解`);
+    };
+
+    const handleBackToDifficulty = () => {
+        // 明示的に難易度選択画面に戻る
+        setSelectedDifficulty(null);
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center p-4">
@@ -173,7 +183,12 @@ export default function Home() {
                             <p className="text-sm sm:text-base text-gray-600 mb-6">
                                 問題を解いて算数の力を伸ばしましょう！正解すると次の問題が表示されます。
                             </p>
-                            <Drill difficulty={selectedDifficulty} onProblemSolved={handleProblemSolved} />
+                            <Drill
+                                difficulty={selectedDifficulty}
+                                onProblemSolved={handleProblemSolved}
+                                onSetComplete={handleSetComplete}
+                                onBackToDifficulty={handleBackToDifficulty}
+                            />
                         </div>
                     </div>
                 )}
