@@ -7,6 +7,7 @@ frontend:
     build:
       commands:
         - npm run build
+        - echo "Static export completed"
   runtime:
     versions:
       node: 18
