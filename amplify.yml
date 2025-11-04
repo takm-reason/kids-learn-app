@@ -9,7 +9,7 @@ frontend:
         - npm run build
         - echo "Build completed - static files ready"
   artifacts:
-    baseDirectory: out
+    baseDirectory: build
     files:
       - '**/*'
   cache:

@@ -1,0 +1,15 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-kidslearnapp-dev-36980-authRole",
+      "UnauthRoleArn": "arn:aws:iam::661518172232:role/amplify-kidslearnapp-dev-36980-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::661518172232:role/amplify-kidslearnapp-dev-36980-authRole",
+      "Region": "ap-northeast-1",
+      "DeploymentBucketName": "amplify-kidslearnapp-dev-36980-deployment",
+      "UnauthRoleName": "amplify-kidslearnapp-dev-36980-unauthRole",
+      "StackName": "amplify-kidslearnapp-dev-36980",
+      "StackId": "arn:aws:cloudformation:ap-northeast-1:661518172232:stack/amplify-kidslearnapp-dev-36980/fe803cf0-b998-11f0-a264-0ed7aa5c81af",
+      "AmplifyAppId": "dh2tg2s4up8s3"
+    }
+  }
+}
