@@ -1,9 +1,11 @@
 import { useReducer } from 'react';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
+export type OperationType = 'addition' | 'subtraction';
 
 interface DrillProps {
     difficulty: Difficulty;
+    operation: OperationType;
     onProblemSolved: () => void;
     onSetComplete: (correctCount: number) => void;
     onBackToDifficulty: () => void;
@@ -18,6 +20,7 @@ interface DrillState {
     isCorrect: boolean | null;
     showNextButton: boolean;
     difficulty: Difficulty;
+    operation: OperationType;
     prevNum1: number | null;
     prevNum2: number | null;
     currentProblem: number;
@@ -27,39 +30,62 @@ interface DrillState {
 }
 
 type DrillAction =
-    | { type: 'NEW_PROBLEM'; difficulty: Difficulty }
+    | { type: 'NEW_PROBLEM'; difficulty: Difficulty; operation: OperationType }
     | { type: 'SELECT_ANSWER'; answer: number; correctAnswer: number; onProblemSolved: () => void }
     | { type: 'RESET_FOR_NEXT' }
     | { type: 'RESTART_SET' }
     | { type: 'SHOW_RESULTS'; onSetComplete: (correctCount: number) => void };
 
-const generateNumbers = (diff: Difficulty, prevNum1?: number | null, prevNum2?: number | null) => {
+const generateNumbers = (diff: Difficulty, operation: OperationType, prevNum1?: number | null, prevNum2?: number | null) => {
     let num1: number, num2: number;
     let attempts = 0;
     const maxAttempts = 50; // 無限ループを防ぐため
 
     do {
-        switch (diff) {
-            case 'easy':
-                // 1から3の数字の足し算
-                num1 = Math.floor(Math.random() * 3) + 1; // 1-3
-                num2 = Math.floor(Math.random() * 3) + 1; // 1-3
-                break;
-            case 'medium':
-                // 答えが9以下の足し算
-                do {
+        if (operation === 'addition') {
+            switch (diff) {
+                case 'easy':
+                    // 1から3の数字の足し算
+                    num1 = Math.floor(Math.random() * 3) + 1; // 1-3
+                    num2 = Math.floor(Math.random() * 3) + 1; // 1-3
+                    break;
+                case 'medium':
+                    // 答えが9以下の足し算
+                    do {
+                        num1 = Math.floor(Math.random() * 9) + 1; // 1-9
+                        num2 = Math.floor(Math.random() * 9) + 1; // 1-9
+                    } while (num1 + num2 > 9);
+                    break;
+                case 'hard':
+                    // 1から9までの足し算
                     num1 = Math.floor(Math.random() * 9) + 1; // 1-9
                     num2 = Math.floor(Math.random() * 9) + 1; // 1-9
-                } while (num1 + num2 > 9);
-                break;
-            case 'hard':
-                // 1から9までの足し算
-                num1 = Math.floor(Math.random() * 9) + 1; // 1-9
-                num2 = Math.floor(Math.random() * 9) + 1; // 1-9
-                break;
-            default:
-                num1 = 1;
-                num2 = 1;
+                    break;
+                default:
+                    num1 = 1;
+                    num2 = 1;
+            }
+        } else { // subtraction
+            switch (diff) {
+                case 'easy':
+                    // 1から3の数字を使った引き算（答えは0以上）
+                    num1 = Math.floor(Math.random() * 3) + 1; // 1-3
+                    num2 = Math.floor(Math.random() * num1) + 1; // 1からnum1まで（答えが0以上になるように）
+                    break;
+                case 'medium':
+                    // 1から5を使った引き算（答えは0以上）
+                    num1 = Math.floor(Math.random() * 5) + 1; // 1-5
+                    num2 = Math.floor(Math.random() * num1) + 1; // 1からnum1まで
+                    break;
+                case 'hard':
+                    // 1から9を使った引き算（答えは0以上）
+                    num1 = Math.floor(Math.random() * 9) + 1; // 1-9
+                    num2 = Math.floor(Math.random() * num1) + 1; // 1からnum1まで
+                    break;
+                default:
+                    num1 = 2;
+                    num2 = 1;
+            }
         }
         attempts++;
     } while (
@@ -72,35 +98,62 @@ const generateNumbers = (diff: Difficulty, prevNum1?: number | null, prevNum2?: 
     return { num1, num2 };
 };
 
-const generateChoices = (correctAnswer: number, difficulty: Difficulty) => {
+const generateChoices = (correctAnswer: number, difficulty: Difficulty, operation: OperationType) => {
     const choices = [correctAnswer];
 
-    // 難易度に応じた選択肢の範囲を設定
+    // 難易度と演算に応じた選択肢の範囲を設定
     let minValue: number, maxValue: number, range: number;
 
-    switch (difficulty) {
-        case 'easy':
-            // 初級：1から3の数字なので、答えは2〜6の範囲
-            minValue = 1;
-            maxValue = 6;
-            range = 2; // 正解から±1の範囲で選択肢を生成
-            break;
-        case 'medium':
-            // 中級：答えが9以下なので、1〜9の範囲
-            minValue = 1;
-            maxValue = 9;
-            range = 3; // 正解から±2の範囲で選択肢を生成
-            break;
-        case 'hard':
-            // 上級：1から9までの足し算なので、答えは2〜18の範囲
-            minValue = 1;
-            maxValue = 18;
-            range = 4; // 正解から±3の範囲で選択肢を生成
-            break;
-        default:
-            minValue = 1;
-            maxValue = 18;
-            range = 3;
+    if (operation === 'addition') {
+        switch (difficulty) {
+            case 'easy':
+                // 初級：1から3の数字なので、答えは2〜6の範囲
+                minValue = 1;
+                maxValue = 6;
+                range = 2; // 正解から±1の範囲で選択肢を生成
+                break;
+            case 'medium':
+                // 中級：答えが9以下なので、1〜9の範囲
+                minValue = 1;
+                maxValue = 9;
+                range = 3; // 正解から±2の範囲で選択肢を生成
+                break;
+            case 'hard':
+                // 上級：1から9までの足し算なので、答えは2〜18の範囲
+                minValue = 1;
+                maxValue = 18;
+                range = 4; // 正解から±3の範囲で選択肢を生成
+                break;
+            default:
+                minValue = 1;
+                maxValue = 18;
+                range = 3;
+        }
+    } else { // subtraction
+        switch (difficulty) {
+            case 'easy':
+                // 初級：1から3を使った引き算なので、答えは0〜2の範囲
+                minValue = 0;
+                maxValue = 2;
+                range = 2; // 正解から±1の範囲で選択肢を生成
+                break;
+            case 'medium':
+                // 中級：1から5を使った引き算なので、答えは0〜4の範囲
+                minValue = 0;
+                maxValue = 4;
+                range = 3; // 正解から±2の範囲で選択肢を生成
+                break;
+            case 'hard':
+                // 上級：1から9を使った引き算なので、答えは0〜8の範囲
+                minValue = 0;
+                maxValue = 8;
+                range = 4; // 正解から±3の範囲で選択肢を生成
+                break;
+            default:
+                minValue = 0;
+                maxValue = 8;
+                range = 3;
+        }
     }
 
     // 正解以外の選択肢を2つ生成
@@ -132,24 +185,27 @@ const generateChoices = (correctAnswer: number, difficulty: Difficulty) => {
     return choices.sort((a, b) => a - b);
 };
 
-const createNewProblem = (difficulty: Difficulty, prevNum1?: number | null, prevNum2?: number | null): Pick<DrillState, 'num1' | 'num2' | 'choices'> => {
-    const newNumbers = generateNumbers(difficulty, prevNum1, prevNum2);
-    const correctAnswer = newNumbers.num1 + newNumbers.num2;
+const createNewProblem = (difficulty: Difficulty, operation: OperationType, prevNum1?: number | null, prevNum2?: number | null): Pick<DrillState, 'num1' | 'num2' | 'choices'> => {
+    const newNumbers = generateNumbers(difficulty, operation, prevNum1, prevNum2);
+    const correctAnswer = operation === 'addition'
+        ? newNumbers.num1 + newNumbers.num2
+        : newNumbers.num1 - newNumbers.num2;
     return {
         num1: newNumbers.num1,
         num2: newNumbers.num2,
-        choices: generateChoices(correctAnswer, difficulty)
+        choices: generateChoices(correctAnswer, difficulty, operation)
     };
 };
 
 const drillReducer = (state: DrillState, action: DrillAction): DrillState => {
     switch (action.type) {
         case 'NEW_PROBLEM': {
-            const newProblem = createNewProblem(action.difficulty, state.prevNum1, state.prevNum2);
+            const newProblem = createNewProblem(action.difficulty, action.operation, state.prevNum1, state.prevNum2);
             return {
                 ...state,
                 ...newProblem,
                 difficulty: action.difficulty,
+                operation: action.operation,
                 prevNum1: state.num1,
                 prevNum2: state.num2,
                 selectedAnswer: null,
@@ -205,7 +261,7 @@ const drillReducer = (state: DrillState, action: DrillAction): DrillState => {
                 };
             }
 
-            const newProblem = createNewProblem(state.difficulty, state.num1, state.num2);
+            const newProblem = createNewProblem(state.difficulty, state.operation, state.num1, state.num2);
             return {
                 ...state,
                 ...newProblem,
@@ -219,7 +275,7 @@ const drillReducer = (state: DrillState, action: DrillAction): DrillState => {
             };
         }
         case 'RESTART_SET': {
-            const newProblem = createNewProblem(state.difficulty);
+            const newProblem = createNewProblem(state.difficulty, state.operation);
             return {
                 ...state,
                 ...newProblem,
@@ -248,8 +304,8 @@ const drillReducer = (state: DrillState, action: DrillAction): DrillState => {
     }
 };
 
-export default function Drill({ difficulty, onProblemSolved, onSetComplete, onBackToDifficulty }: DrillProps) {
-    const initialProblem = createNewProblem(difficulty);
+export default function Drill({ difficulty, operation, onProblemSolved, onSetComplete, onBackToDifficulty }: DrillProps) {
+    const initialProblem = createNewProblem(difficulty, operation);
 
     const [state, dispatch] = useReducer(drillReducer, {
         ...initialProblem,
@@ -258,6 +314,7 @@ export default function Drill({ difficulty, onProblemSolved, onSetComplete, onBa
         isCorrect: null,
         showNextButton: false,
         difficulty,
+        operation,
         prevNum1: null,
         prevNum2: null,
         currentProblem: 1,
@@ -266,15 +323,17 @@ export default function Drill({ difficulty, onProblemSolved, onSetComplete, onBa
         showResults: false
     });
 
-    // 難易度が変更された場合の処理
-    if (state.difficulty !== difficulty) {
-        dispatch({ type: 'NEW_PROBLEM', difficulty });
+    // 難易度または演算が変更された場合の処理
+    if (state.difficulty !== difficulty || state.operation !== operation) {
+        dispatch({ type: 'NEW_PROBLEM', difficulty, operation });
     }
 
     const handleAnswerSelect = (answer: number) => {
         if (state.showNextButton || state.showResults) return; // 既に回答済みまたは結果表示中の場合は何もしない
 
-        const correctAnswer = state.num1 + state.num2;
+        const correctAnswer = state.operation === 'addition'
+            ? state.num1 + state.num2
+            : state.num1 - state.num2;
         dispatch({
             type: 'SELECT_ANSWER',
             answer,
@@ -457,11 +516,11 @@ export default function Drill({ difficulty, onProblemSolved, onSetComplete, onBa
 
                 <div className="bg-white rounded-lg p-4 mb-4 shadow-sm border">
                     <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">
-                        足し算問題
+                        {state.operation === 'addition' ? '足し算問題' : '引き算問題'}
                     </h3>
 
                     <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-indigo-600 mb-2 break-all">
-                        {state.num1} + {state.num2} = ?
+                        {state.num1} {state.operation === 'addition' ? '+' : '-'} {state.num2} = ?
                     </div>
                 </div>
 

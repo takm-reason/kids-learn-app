@@ -5,33 +5,58 @@ import { auth } from '@/lib/firebase';
 import Drill from '@/components/Drill';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
+export type OperationType = 'addition' | 'subtraction';
 
 interface DifficultySelectionProps {
-    onSelectDifficulty: (difficulty: Difficulty) => void;
+    onSelectDifficulty: (difficulty: Difficulty, operation: OperationType) => void;
 }
 
 function DifficultySelection({ onSelectDifficulty }: DifficultySelectionProps) {
-    const difficulties = [
+    const additionDifficulties = [
         {
             id: 'easy' as Difficulty,
             title: '初級',
             description: '1から3の数字の足し算',
             icon: '🌟',
-            color: 'bg-slate-500 hover:bg-slate-600'
+            color: 'bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-800'
         },
         {
             id: 'medium' as Difficulty,
             title: '中級',
             description: '答えが9以下の足し算',
             icon: '⭐',
-            color: 'bg-slate-600 hover:bg-slate-700'
+            color: 'bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-800'
         },
         {
             id: 'hard' as Difficulty,
             title: '上級',
             description: '1から9までの足し算',
             icon: '🏆',
-            color: 'bg-slate-700 hover:bg-slate-800'
+            color: 'bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-800'
+        }
+    ];
+
+    const subtractionDifficulties = [
+        {
+            id: 'easy' as Difficulty,
+            title: '初級',
+            description: '1から3の数字を使った引き算',
+            icon: '🌟',
+            color: 'bg-red-50 hover:bg-red-100 border-red-200 text-red-800'
+        },
+        {
+            id: 'medium' as Difficulty,
+            title: '中級',
+            description: '1から5の数字を使った引き算',
+            icon: '⭐',
+            color: 'bg-red-50 hover:bg-red-100 border-red-200 text-red-800'
+        },
+        {
+            id: 'hard' as Difficulty,
+            title: '上級',
+            description: '1から9の数字を使った引き算',
+            icon: '🏆',
+            color: 'bg-red-50 hover:bg-red-100 border-red-200 text-red-800'
         }
     ];
 
@@ -45,34 +70,76 @@ function DifficultySelection({ onSelectDifficulty }: DifficultySelectionProps) {
                     あなたのレベルに合った問題を選んで挑戦しましょう！
                 </p>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-                    {difficulties.map((difficulty) => (
-                        <button
-                            key={difficulty.id}
-                            onClick={() => onSelectDifficulty(difficulty.id)}
-                            className={`${difficulty.color} text-white rounded-lg p-6 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg`}
-                        >
-                            <div className="text-4xl mb-3">{difficulty.icon}</div>
-                            <h3 className="text-xl font-bold mb-2">{difficulty.title}</h3>
-                            <p className="text-sm opacity-90">{difficulty.description}</p>
-                        </button>
-                    ))}
+                {/* 足し算セクション */}
+                <div className="mb-8">
+                    <div className="flex items-center justify-center mb-6">
+                        <span className="text-2xl mr-3">➕</span>
+                        <h3 className="text-xl font-bold text-gray-900">足し算</h3>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                        {additionDifficulties.map((difficulty) => (
+                            <button
+                                key={`addition-${difficulty.id}`}
+                                onClick={() => onSelectDifficulty(difficulty.id, 'addition')}
+                                className={`${difficulty.color} border rounded-lg p-6 transition-all duration-200 transform hover:scale-105 shadow-sm hover:shadow-md`}
+                            >
+                                <div className="text-4xl mb-3">{difficulty.icon}</div>
+                                <h4 className="text-xl font-bold mb-2">{difficulty.title}</h4>
+                                <p className="text-sm opacity-80">{difficulty.description}</p>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* 引き算セクション */}
+                <div>
+                    <div className="flex items-center justify-center mb-6">
+                        <span className="text-2xl mr-3">➖</span>
+                        <h3 className="text-xl font-bold text-gray-900">引き算</h3>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                        {subtractionDifficulties.map((difficulty) => (
+                            <button
+                                key={`subtraction-${difficulty.id}`}
+                                onClick={() => onSelectDifficulty(difficulty.id, 'subtraction')}
+                                className={`${difficulty.color} border rounded-lg p-6 transition-all duration-200 transform hover:scale-105 shadow-sm hover:shadow-md`}
+                            >
+                                <div className="text-4xl mb-3">{difficulty.icon}</div>
+                                <h4 className="text-xl font-bold mb-2">{difficulty.title}</h4>
+                                <p className="text-sm opacity-80">{difficulty.description}</p>
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>
     );
 }
 
-function getDifficultyTitle(difficulty: Difficulty): string {
+function getDifficultyTitle(difficulty: Difficulty, operation: OperationType): string {
+    const operationText = operation === 'addition' ? '足し算' : '引き算';
+
     switch (difficulty) {
         case 'easy':
-            return '初級 - 1から3の数字の足し算';
+            if (operation === 'addition') {
+                return '初級 - 1から3の数字の足し算';
+            } else {
+                return '初級 - 1から3の数字の数字を使った引き算';
+            }
         case 'medium':
-            return '中級 - 答えが9以下の足し算';
+            if (operation === 'addition') {
+                return '中級 - 答えが9以下の足し算';
+            } else {
+                return '中級 - 1から5の数字を使った引き算';
+            }
         case 'hard':
-            return '上級 - 1から9までの足し算';
+            if (operation === 'addition') {
+                return '上級 - 1から9までの足し算';
+            } else {
+                return '上級 - 1から9の数字を使った引き算';
+            }
         default:
-            return '足し算ドリル';
+            return `${operationText}ドリル`;
     }
 }
 
@@ -81,6 +148,7 @@ export default function Home() {
     const [loading, setLoading] = useState(false);
     const [problemsSolved, setProblemsSolved] = useState(0);
     const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | null>(null);
+    const [selectedOperation, setSelectedOperation] = useState<OperationType | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const router = useRouter();
 
@@ -128,9 +196,15 @@ export default function Home() {
         console.log(`セット完了: ${correctCount}/10問正解`);
     };
 
+    const handleSelectDifficulty = (difficulty: Difficulty, operation: OperationType) => {
+        setSelectedDifficulty(difficulty);
+        setSelectedOperation(operation);
+    };
+
     const handleBackToDifficulty = () => {
         // 明示的に難易度選択画面に戻る
         setSelectedDifficulty(null);
+        setSelectedOperation(null);
     };
 
     if (loading) {
@@ -251,19 +325,20 @@ export default function Home() {
 
             {/* メインコンテンツ */}
             <main className="max-w-4xl mx-auto py-4 px-3 sm:py-6 sm:px-4 md:px-6 lg:px-8">
-                {!selectedDifficulty ? (
-                    <DifficultySelection onSelectDifficulty={setSelectedDifficulty} />
+                {!selectedDifficulty || !selectedOperation ? (
+                    <DifficultySelection onSelectDifficulty={handleSelectDifficulty} />
                 ) : (
                     <>
                         <div className="bg-white overflow-hidden shadow rounded-lg">
                             <div className="px-3 py-4 sm:px-4 sm:py-5 md:p-6">
                                 <div className="mb-4">
                                     <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-900 text-center">
-                                        {getDifficultyTitle(selectedDifficulty)}
+                                        {getDifficultyTitle(selectedDifficulty, selectedOperation)}
                                     </h2>
                                 </div>
                                 <Drill
                                     difficulty={selectedDifficulty}
+                                    operation={selectedOperation}
                                     onProblemSolved={handleProblemSolved}
                                     onSetComplete={handleSetComplete}
                                     onBackToDifficulty={handleBackToDifficulty}
@@ -278,10 +353,13 @@ export default function Home() {
                             </p>
                             <div className="flex justify-center">
                                 <button
-                                    onClick={() => setSelectedDifficulty(null)}
+                                    onClick={() => {
+                                        setSelectedDifficulty(null);
+                                        setSelectedOperation(null);
+                                    }}
                                     className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded text-sm"
                                 >
-                                    難易度変更
+                                    問題選択に戻る
                                 </button>
                             </div>
                         </div>
