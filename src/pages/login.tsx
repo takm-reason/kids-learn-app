@@ -108,16 +108,31 @@ export default function Login() {
                         </button>
                     </div>
 
-                    <div className="text-center">
-                        <button
-                            type="button"
-                            onClick={() => setIsRegistering(!isRegistering)}
-                            className="text-indigo-600 hover:text-indigo-500 text-sm sm:text-base p-2 min-h-[44px] touch-manipulation"
-                        >
-                            {isRegistering
-                                ? 'ログインする'
-                                : 'アカウントを作成する'}
-                        </button>
+                    <div className="space-y-3">
+                        <div className="text-center">
+                            <button
+                                type="button"
+                                onClick={() => setIsRegistering(!isRegistering)}
+                                className="text-indigo-600 hover:text-indigo-500 text-sm sm:text-base p-2 min-h-[44px] touch-manipulation"
+                            >
+                                {isRegistering
+                                    ? 'ログインする'
+                                    : 'アカウントを作成する'}
+                            </button>
+                        </div>
+
+                        <div className="text-center border-t border-gray-200 pt-4">
+                            <p className="text-sm text-gray-600 mb-3">
+                                アカウントなしでも利用できます
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() => router.push('/')}
+                                className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded text-base transition-colors duration-200 min-h-[44px] touch-manipulation"
+                            >
+                                ゲストとして続行
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>

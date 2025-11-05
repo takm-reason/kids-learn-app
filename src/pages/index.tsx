@@ -78,7 +78,7 @@ function getDifficultyTitle(difficulty: Difficulty): string {
 
 export default function Home() {
     const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [problemsSolved, setProblemsSolved] = useState(0);
     const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -86,16 +86,12 @@ export default function Home() {
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user) {
-                setUser(user);
-            } else {
-                router.push('/login');
-            }
+            setUser(user);
             setLoading(false);
         });
 
         return () => unsubscribe();
-    }, [router]);
+    }, []);
 
     // メニュー外のクリックでメニューを閉じる
     useEffect(() => {
@@ -117,7 +113,7 @@ export default function Home() {
     const handleSignOut = async () => {
         try {
             await signOut(auth);
-            router.push('/login');
+            // ログイン画面にリダイレクトせず、現在のページに留まる
         } catch (error) {
             console.error('サインアウトエラー:', error);
         }
@@ -148,10 +144,6 @@ export default function Home() {
         );
     }
 
-    if (!user) {
-        return null; // リダイレクト中
-    }
-
     return (
         <div className="min-h-screen bg-gray-50">
             {/* ヘッダー */}
@@ -169,15 +161,26 @@ export default function Home() {
                                 <p className="text-2xl font-bold text-gray-700">{problemsSolved}</p>
                                 <p className="text-sm text-gray-600">今日解いた問題数</p>
                             </div>
-                            <div className="text-sm text-gray-600">
-                                {user.email}
-                            </div>
-                            <button
-                                onClick={handleSignOut}
-                                className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded text-base"
-                            >
-                                サインアウト
-                            </button>
+                            {user ? (
+                                <>
+                                    <div className="text-sm text-gray-600">
+                                        {user.email}
+                                    </div>
+                                    <button
+                                        onClick={handleSignOut}
+                                        className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded text-base"
+                                    >
+                                        サインアウト
+                                    </button>
+                                </>
+                            ) : (
+                                <button
+                                    onClick={() => router.push('/login')}
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded text-base"
+                                >
+                                    ログイン
+                                </button>
+                            )}
                         </div>
 
                         {/* ハンバーガーメニューボタン (md未満で表示) */}
@@ -209,9 +212,15 @@ export default function Home() {
                         }`}>
                         <div className="space-y-4">
                             {/* ユーザー情報 */}
-                            <div className="text-sm text-gray-600">
-                                <span className="font-medium">ログイン中:</span> {user.email}
-                            </div>
+                            {user ? (
+                                <div className="text-sm text-gray-600">
+                                    <span className="font-medium">ログイン中:</span> {user.email}
+                                </div>
+                            ) : (
+                                <div className="text-sm text-gray-600">
+                                    <span className="font-medium">ゲストモード</span>
+                                </div>
+                            )}
 
                             {/* 統計情報 */}
                             <div className="flex items-center justify-between py-2">
@@ -219,13 +228,22 @@ export default function Home() {
                                 <span className="text-xl font-bold text-gray-700">{problemsSolved}</span>
                             </div>
 
-                            {/* サインアウトボタン */}
-                            <button
-                                onClick={handleSignOut}
-                                className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded text-base transition-colors duration-200"
-                            >
-                                サインアウト
-                            </button>
+                            {/* ログイン/サインアウトボタン */}
+                            {user ? (
+                                <button
+                                    onClick={handleSignOut}
+                                    className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded text-base transition-colors duration-200"
+                                >
+                                    サインアウト
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => router.push('/login')}
+                                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded text-base transition-colors duration-200"
+                                >
+                                    ログイン
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
